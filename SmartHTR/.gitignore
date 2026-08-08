@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+outputs/text/
+outputs/lines/
+outputs/debug/
+logs/*.log
+pretrained_models/

@@ -1,0 +1,1 @@
+"""SmartHTR regression tests."""

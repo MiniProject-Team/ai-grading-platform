@@ -1,0 +1,5 @@
+Q1. What is Artificial Intelligence? (10 Marks)
+
+Q2. Explain Machine Learning. [10]
+
+Q3) What is Deep Learning? Marks: 10

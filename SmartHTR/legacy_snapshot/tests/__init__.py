@@ -1,0 +1,1 @@
+"""SmartHTR test package."""

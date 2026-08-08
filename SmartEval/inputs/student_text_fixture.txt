@@ -1,0 +1,8 @@
+Q1.
+Artificial Intelligence simulates human intelligence using machines.
+
+Q2.
+Machine Learning lets computers learn patterns from data.
+
+Q3.
+Deep Learning uses neural networks with many layers.
