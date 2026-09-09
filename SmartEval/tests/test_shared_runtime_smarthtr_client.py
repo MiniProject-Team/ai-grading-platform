@@ -25,7 +25,7 @@ class _Document:
 
 class _Pipeline:
     class _Settings:
-        model_name = "microsoft/trocr-small-handwritten"
+        model_name = "microsoft/trocr-base-handwritten"
 
     settings = _Settings()
 
@@ -58,7 +58,7 @@ class SharedRuntimeSmartHTRClientTests(unittest.TestCase):
         self.assertEqual(len(pipeline.calls), 2)
         self.assertEqual([page.page_number for page in first.pages], [1, 2])
         self.assertEqual(first.full_text, "Q1. First answer\n\nQ2. Second answer")
-        self.assertEqual(first.metadata["model"], "microsoft/trocr-small-handwritten")
+        self.assertEqual(first.metadata["model"], "microsoft/trocr-base-handwritten")
         self.assertEqual(second.full_text, first.full_text)
 
     def test_missing_sheet_is_rejected_before_pipeline_creation(self):

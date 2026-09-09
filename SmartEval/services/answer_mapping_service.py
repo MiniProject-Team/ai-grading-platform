@@ -35,8 +35,23 @@ class AnswerMappingService:
     @staticmethod
     def _validate_question_ids(questions: list[Question]) -> None:
         ids = [question.question_id for question in questions]
+        logging.getLogger("smarteval").info(
+            "EVALUATOR INPUT DEBUG: count=%s all_ids=%s details=%s",
+            len(questions), [str(item) for item in ids],
+            [{"index": index, "id": str(question.question_id), "number": question.question_number,
+              "text": question.question_text[:100]} for index, question in enumerate(questions)],
+        )
         if len(ids) != len(set(ids)):
-            raise ValueError("Duplicate question IDs")
+            first_indices: dict[object, int] = {}
+            for index, question_id in enumerate(ids):
+                if question_id in first_indices:
+                    first, second = first_indices[question_id], index
+                    raise ValueError(
+                        f"Duplicate question ID: {question_id}; first evaluator object index={first} "
+                        f"text={questions[first].question_text[:100]!r}; second index={second} "
+                        f"text={questions[second].question_text[:100]!r}"
+                    )
+                first_indices[question_id] = index
 
     @staticmethod
     def _index_answers(answers: list[ModelAnswer] | list[StudentAnswer], label: str):

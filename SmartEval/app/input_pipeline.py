@@ -46,5 +46,8 @@ class InputPipeline:
         question_text, model_answer_text = self.input_manager.load_teacher_inputs(question_paper, model_answer)
         questions = self.question_parser.parse(question_text)
         model_answers = self.model_parser.parse(model_answer_text)
-        student_answers = self.student_parser.parse(self.input_manager.load_student_text(student_text))
+        student_answers = self.student_parser.parse(
+            self.input_manager.load_student_text(student_text),
+            expected_question_ids=[question.question_id for question in questions],
+        )
         return InputAnalysis(questions, model_answers, student_answers, self.mapper.map(questions, model_answers, student_answers))

@@ -28,6 +28,8 @@ Phase 10 exposes that application service through a FastAPI interface. The API o
 
 Phase 11 adds PostgreSQL-backed evaluation history. A completed report is saved atomically as both normalized student, exam, evaluation, and question records and an immutable JSON report snapshot. SmartHTR remains unchanged and does not access this database.
 
+Question-paper understanding is available independently at `POST /api/v1/question-papers/analyze`. It discovers sections, common numbering variants, marks, COs, internal `OR` choices, available header metadata, and question types from extracted text without assuming a single paper layout. Send `generate_answers=true` to receive a marks-aware answer-sheet scaffold. It preserves unknown fields as `null` and returns validation warnings rather than modifying a paper.
+
 The evaluation unit is the complete answer for one question, never an individual OCR word.
 
 ## SmartHTR connection

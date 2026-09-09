@@ -8,10 +8,21 @@ from dataclasses import dataclass
 from domain.value_objects.question_id import QuestionId
 
 
+# A bare number is a heading only when it has an explicit delimiter.  The old
+# optional-prefix pattern accepted OCR/table cells such as "4 marks" as Q4.
 HEADER_PATTERN = re.compile(
-    r"^\s*(?:(?:q(?:uestion)?|answer)\.?\s*)?(?P<number>\d+)(?:\s*[.):])?(?:\s+(?P<body>.*))?\s*$",
+    r"^\s*(?:(?:q(?:uestion)?|answer)\s*\.?\s*(?P<prefixed>\d+)(?:\s*[.):])?|(?P<bare>\d+)\s*[.):])(?:\s*(?P<body>.*))?\s*$",
     re.IGNORECASE,
 )
+
+
+def normalize_question_id(value: str) -> str:
+    """Return a deterministic canonical ID for supported question labels."""
+    match = re.match(r"^\s*(?:q(?:uestion)?\s*\.?)?\s*(\d+)\s*(?:\(?\s*([a-z]|[ivxlcdm]+)\s*\)?)?\s*[.):]?\s*$", value, re.I)
+    if not match:
+        raise ValueError(f"Unsupported question identifier: {value!r}")
+    number, child = match.groups()
+    return f"Q{int(number)}" + (f"({child.lower()})" if child else "")
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,7 +41,7 @@ class NumberedSectionParser:
             if match:
                 if current_number is not None:
                     sections.append(NumberedSection(QuestionId(current_number), self._join(current_lines)))
-                current_number = int(match.group("number"))
+                current_number = int(match.group("prefixed") or match.group("bare"))
                 current_lines = [match.group("body") or ""]
             elif current_number is not None:
                 current_lines.append(line)

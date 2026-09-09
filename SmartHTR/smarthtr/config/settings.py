@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True, slots=True)
 class Settings:
-    model_name: str = "microsoft/trocr-small-handwritten"
+    model_name: str = "microsoft/trocr-base-handwritten"
     device: str = "auto"
     max_new_tokens: int = 128
     num_beams: int = 5

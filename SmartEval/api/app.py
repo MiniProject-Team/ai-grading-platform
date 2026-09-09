@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from api.errors import APIProblem
-from api.routes import evaluation_router, health_router
+from api.routes import evaluation_router, health_router, question_paper_router
 from api.schemas.responses import ErrorDetailResponse, ErrorResponse
 from config.settings import Settings
 from integration.evaluation_service import EvaluationService
@@ -42,6 +42,7 @@ def create_app(
     )
     app.include_router(health_router)
     app.include_router(evaluation_router)
+    app.include_router(question_paper_router)
     _register_exception_handlers(app)
     return app
 

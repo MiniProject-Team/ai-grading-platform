@@ -7,6 +7,7 @@ import re
 
 from domain.entities.question import Question
 from domain.value_objects.question_id import QuestionId
+from question_paper.canonical import QuestionHierarchyParser
 
 from .section_parser import NumberedSectionParser
 
@@ -20,14 +21,30 @@ MARKS_PATTERN = re.compile(
 class QuestionParser:
     def __init__(self, section_parser: NumberedSectionParser | None = None) -> None:
         self.section_parser = section_parser or NumberedSectionParser()
+        self.hierarchy_parser = QuestionHierarchyParser()
         self.logger = logging.getLogger("smarteval")
 
     def parse(self, text: str) -> list[Question]:
+        # Resolve hierarchy before adapting to the flat legacy evaluator. This
+        # prevents one parent (Q4) plus its a/b rows or an OR block from being
+        # emitted as duplicate top-level Question objects.
+        hierarchical = self.hierarchy_parser.parse(text)
+        # A canonical top-level set is authoritative even when PDF table
+        # extraction loses visible a/b or OR labels. Falling back in that case
+        # was the live Q4 bug: the permissive legacy parser re-read a marks
+        # column as an additional Q4.
+        if hierarchical:
+            self._log_canonical_debug(hierarchical)
+            return self._adapt_hierarchy(hierarchical)
         questions = []
         seen_ids: set[QuestionId] = set()
         for section in self.section_parser.parse(text):
             if section.question_id in seen_ids:
-                raise ValueError(f"Duplicate question ID: {section.question_id}")
+                first = next(item for item in questions if item.question_id == section.question_id)
+                raise ValueError(
+                    f"Duplicate question ID: {section.question_id}; legacy fallback source blocks differ. "
+                    f"first={first.question_text[:100]!r}; second={section.text[:100]!r}"
+                )
             question_text, max_marks = self._extract_marks(section.text)
             if not question_text:
                 raise ValueError(f"Question {section.question_id} has empty text")
@@ -38,6 +55,26 @@ class QuestionParser:
         if not questions:
             raise ValueError("No numbered questions found in question paper")
         self.logger.info("Questions detected: %s", len(questions))
+        return questions
+
+    def _log_canonical_debug(self, hierarchical) -> None:
+        self.logger.info("RAW PARSER OUTPUT: count=%s ids=%s", len(hierarchical), [item.id for item in hierarchical])
+        for index, item in enumerate(hierarchical):
+            self.logger.info(
+                "CANONICAL QUESTION index=%s id=%s children=%s alternative_group=%s text=%r",
+                index, item.id, [child.id for child in item.subquestions], item.alternative_group, item.text[:100],
+            )
+
+    def _adapt_hierarchy(self, hierarchical) -> list[Question]:
+        questions: list[Question] = []
+        for parent in hierarchical:
+            pieces = [parent.text] if parent.text else []
+            pieces.extend(f"({child.label}) {child.text}" for child in parent.subquestions)
+            question_text, max_marks = self._extract_marks("\n".join(pieces))
+            if not question_text:
+                raise ValueError(f"Question {parent.id} has empty text")
+            questions.append(Question(QuestionId(int(parent.number)), int(parent.number), question_text, max_marks))
+        self.logger.info("Canonical top-level questions adapted for legacy evaluation: %s", len(questions))
         return questions
 
     @staticmethod
