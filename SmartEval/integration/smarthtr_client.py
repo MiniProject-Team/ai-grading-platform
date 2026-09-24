@@ -5,32 +5,19 @@ from __future__ import annotations
 import sys
 import threading
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Protocol
 
+from .ocr_service import OCRPageResult, OCRResult, OCRService
 
-@dataclass(frozen=True, slots=True)
-class OCRPageResult:
-    page_number: int
-    text: str
-    processing_time: float | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class SmartHTROCRResult:
-    status: str
-    pages: tuple[OCRPageResult, ...]
-    full_text: str
-    metadata: dict[str, object] = field(default_factory=dict)
-    warnings: tuple[str, ...] = field(default_factory=tuple)
+SmartHTROCRResult = OCRResult
 
 
 class SmartHTRClientError(RuntimeError):
     """Raised when the shared SmartHTR runtime cannot process a document."""
 
 
-class SmartHTRClient(ABC):
+class SmartHTRClient(OCRService, ABC):
     @abstractmethod
     def recognize(self, student_sheet: Path) -> SmartHTROCRResult:
         """Recognize one complete answer-sheet image or PDF."""
@@ -79,10 +66,13 @@ class SharedRuntimeSmartHTRClient(SmartHTRClient):
             OCRPageResult(page_number=page.number, text=page.text)
             for page in sorted(document.pages, key=lambda page: page.number)
         )
-        return SmartHTROCRResult(
+        return OCRResult(
+            provider="trocr",
             status="success",
             pages=pages,
-            full_text=document.full_text,
+            extracted_text=document.full_text,
+            success=True,
+            pages_processed=len(pages),
             metadata={"page_count": len(pages), "model": getattr(pipeline.settings, "model_name", "")},
         )
 
@@ -118,3 +108,7 @@ def create_smarthtr_client(settings) -> SmartHTRClient:
     if settings.smarthr_provider not in {"local", "shared_runtime"}:
         raise ValueError("SmartEval requires SMARTHR_PROVIDER=local for the shared SmartHTR runtime.")
     return SharedRuntimeSmartHTRClient()
+
+
+class TrOCROCRService(SharedRuntimeSmartHTRClient):
+    """Named provider implementation for the existing local TrOCR pipeline."""

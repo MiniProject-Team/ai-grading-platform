@@ -80,6 +80,7 @@ class EvaluationQuestionRecord(Base):
     question_number: Mapped[int] = mapped_column(Integer, nullable=False)
     question_text: Mapped[str] = mapped_column(Text, nullable=False)
     max_marks: Mapped[int | None] = mapped_column(Integer)
+    alternative_group: Mapped[str | None] = mapped_column(String(64))
     awarded_marks: Mapped[float | None] = mapped_column(Float)
     percentage: Mapped[float | None] = mapped_column(Float)
     status: Mapped[str] = mapped_column(String(64), nullable=False)

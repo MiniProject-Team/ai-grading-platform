@@ -41,6 +41,11 @@ class Settings:
     persistence_failure_is_error: bool = True
     retain_evaluation_content: bool = True
     smarthr_provider: str = "local"
+    ocr_provider: str = "trocr"
+    ilovepdf_public_key: str = ""
+    ilovepdf_secret_key: str = ""
+    ilovepdf_region: str = "in"
+    ilovepdf_timeout: float = 120.0
     debug: bool = False
 
     @classmethod
@@ -82,6 +87,11 @@ class Settings:
             persistence_failure_is_error=os.getenv("PERSISTENCE_FAILURE_IS_ERROR", "true").lower() == "true",
             retain_evaluation_content=os.getenv("RETAIN_EVALUATION_CONTENT", "true").lower() == "true",
             smarthr_provider=os.getenv("SMARTHR_PROVIDER", "local").lower(),
+            ocr_provider=os.getenv("OCR_PROVIDER", "trocr").lower(),
+            ilovepdf_public_key=os.getenv("ILOVEPDF_PUBLIC_KEY", ""),
+            ilovepdf_secret_key=os.getenv("ILOVEPDF_SECRET_KEY", ""),
+            ilovepdf_region=os.getenv("ILOVEPDF_REGION", "in"),
+            ilovepdf_timeout=float(os.getenv("ILOVEPDF_TIMEOUT", "120")),
             debug=os.getenv("DEBUG", "false").lower() == "true",
         )
 

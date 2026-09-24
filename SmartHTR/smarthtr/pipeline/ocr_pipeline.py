@@ -46,31 +46,128 @@ class OCRPipeline:
 
     def run(self, input_path: Path) -> Document:
         started = time.perf_counter()
+
         self.logger.info("Starting SmartHTR for %s", input_path)
+
         document = self.loader.load(input_path)
-        self.logger.info("Loaded %s page(s)", len(document.pages))
+
+        self.logger.info(
+            "Loaded %s page(s)",
+            len(document.pages),
+        )
+
         self.process(document)
-        output_paths = self.exporter.export(document, self.settings.output_directory)
-        self.logger.info("OCR completed in %.2fs; output: %s", time.perf_counter() - started, output_paths)
+
+        output_paths = self.exporter.export(
+            document,
+            self.settings.output_directory,
+        )
+
+        self.logger.info(
+            "OCR completed in %.2fs; output: %s",
+            time.perf_counter() - started,
+            output_paths,
+        )
+
         return document
 
     def process(self, document: Document) -> Document:
         for page in document.pages:
+
+            # ---------------------------------------------------------
+            # 1. FULL-PAGE PREPROCESSING
+            # ---------------------------------------------------------
+            self.logger.info(
+                "Preprocessing page %s",
+                page.number,
+            )
+
             self.preprocessor.process(page)
-            page.detections = self.detector.detect(page.image, page.number)
-            page.lines = self.cropper.crop(page.image, page.detections)
+
+            # ---------------------------------------------------------
+            # 2. USE THE PROCESSED IMAGE
+            # ---------------------------------------------------------
+            processed_image = (
+                page.processed_image
+                if page.processed_image is not None
+                else page.image
+            )
+
+            # ---------------------------------------------------------
+            # 3. DOCTR DETECTION
+            # ---------------------------------------------------------
+            self.logger.info(
+                "Running DocTR detection on page %s",
+                page.number,
+            )
+
+            page.detections = self.detector.detect(
+                processed_image,
+                page.number,
+            )
+
+            # ---------------------------------------------------------
+            # 4. CROP DETECTED HANDWRITING REGIONS
+            # ---------------------------------------------------------
+            page.lines = self.cropper.crop(
+                processed_image,
+                page.detections,
+            )
+
+            self.logger.info(
+                "Detected %s line(s) on page %s",
+                len(page.lines),
+                page.number,
+            )
+
+            # ---------------------------------------------------------
+            # 5. LINE-LEVEL PREPROCESSING
+            # ---------------------------------------------------------
             for line in page.lines:
                 self.line_preprocessor.process(line)
+
+            # ---------------------------------------------------------
+            # 6. HANDWRITING RECOGNITION
+            # ---------------------------------------------------------
             self.recognizer.recognize_batch(page.lines)
+
+            # ---------------------------------------------------------
+            # 7. RECONSTRUCT READING ORDER
+            # ---------------------------------------------------------
             page.lines = self.reconstructor.order(page.lines)
+
+            # ---------------------------------------------------------
+            # 8. SAVE DEBUG LINE IMAGES
+            # ---------------------------------------------------------
             self._save_debug_lines(page)
+
         return document
 
     def _save_debug_lines(self, page) -> None:
         if not self.settings.save_line_images:
             return
-        page_directory = self.settings.line_output_directory / f"page_{page.number:03d}"
-        page_directory.mkdir(parents=True, exist_ok=True)
+
+        page_directory = (
+            self.settings.line_output_directory
+            / f"page_{page.number:03d}"
+        )
+
+        page_directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
         for line in page.lines:
-            image = line.processed_image if line.processed_image is not None else line.image
-            cv2.imwrite(str(page_directory / f"line_{line.id:03d}.png"), cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            image = (
+                line.processed_image
+                if line.processed_image is not None
+                else line.image
+            )
+
+            cv2.imwrite(
+                str(page_directory / f"line_{line.id:03d}.png"),
+                cv2.cvtColor(
+                    image,
+                    cv2.COLOR_RGB2BGR,
+                ),
+            )

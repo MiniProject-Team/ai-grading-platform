@@ -21,7 +21,8 @@ from reporting.json_report_exporter import JsonReportExporter
 from reporting.text_report_exporter import TextReportExporter
 from services.input_manager import InputManager
 
-from .smarthtr_client import SmartHTROCRResult, create_smarthtr_client
+from .ocr_factory import create_ocr_service
+from .ocr_service import OCRResult
 from .student_text_provider import (
     EmptyOCRResultError,
     SmartHTRIntegrationService,
@@ -50,7 +51,7 @@ class EvaluationRequest:
 @dataclass(frozen=True, slots=True)
 class EndToEndEvaluationResult:
     report: EvaluationReport
-    ocr_result: SmartHTROCRResult | None
+    ocr_result: OCRResult | None
     json_report_path: Path
     text_report_path: Path
 
@@ -73,7 +74,7 @@ class EvaluationService:
     ) -> None:
         self.settings = settings
         self.student_text_provider = student_text_provider or SharedRuntimeSmartHTRStudentTextProvider(
-            SmartHTRIntegrationService(create_smarthtr_client(settings)),
+            SmartHTRIntegrationService(create_ocr_service(settings)),
             continue_on_partial=settings.continue_on_partial_ocr,
         )
         self.report_generator = report_generator or EvaluationReportGenerator()
@@ -156,12 +157,14 @@ class EvaluationService:
         if not result:
             return {}
         return {
+            "ocr_provider": result.provider,
             "ocr_status": result.status,
             "ocr_page_count": str(len(result.pages)),
             **({"ocr_model": str(result.metadata["model"])} if result.metadata.get("model") else {}),
+            **({"ocr_error": result.error} if result.error else {}),
         }
 
-    def _last_ocr_result(self) -> SmartHTROCRResult | None:
+    def _last_ocr_result(self) -> OCRResult | None:
         return getattr(self.student_text_provider, "last_result", None)
 
     def _failed_report(

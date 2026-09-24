@@ -24,6 +24,41 @@ Phase 8 assembles the existing results into an API-ready `EvaluationReport`, inc
 
 SmartHTR remains the source of truth for handwritten OCR. In Google Colab, SmartHTR and SmartEval share one Python runtime: `SharedRuntimeSmartHTRClient` calls SmartHTR's existing complete-document `OCRPipeline` directly and passes its ordered page text plus `full_text` to SmartEval. SmartEval does not duplicate OCR, modify the TrOCR pipeline, or create a network boundary.
 
+## OCR Providers
+
+SmartEval selects one document-level OCR provider through `OCR_PROVIDER`. Both providers return the same OCR result structure and feed the existing text normalization, question/answer extraction, semantic evaluation, marks, feedback, and reporting pipeline. No downstream grading code is duplicated.
+
+### TrOCR
+
+- Local handwritten OCR through the existing SmartHTR pipeline.
+- Preserves image preprocessing, DocTR layout detection, line cropping, reading-order reconstruction, and the TrOCR model.
+- Requires no external OCR API.
+
+### iLovePDF
+
+- Cloud/API-based PDF OCR using the iLovePDF `pdfocr` tool.
+- Requires iLovePDF developer credentials and an internet connection.
+- Uses account processing allowance/credits.
+- Intended for experimental comparison with TrOCR; this project makes no accuracy claim for either provider.
+
+The default remains TrOCR:
+
+```text
+OCR_PROVIDER=trocr
+```
+
+To use iLovePDF for PDF student sheets:
+
+```text
+OCR_PROVIDER=ilovepdf
+ILOVEPDF_PUBLIC_KEY=your-public-key
+ILOVEPDF_SECRET_KEY=your-secret-key
+ILOVEPDF_REGION=in
+ILOVEPDF_TIMEOUT=120
+```
+
+Keep these values server-side in `SmartEval/.env`. Never put the secret key in frontend code, commit real credentials, or log JWTs. Copy `SmartEval/.env.example` to `.env` and fill the placeholders only when using iLovePDF.
+
 Phase 10 exposes that application service through a FastAPI interface. The API owns only multipart validation, temporary upload handling, response serialization, and safe error conversion; it delegates OCR and evaluation to the existing Phase 9 service.
 
 Phase 11 adds PostgreSQL-backed evaluation history. A completed report is saved atomically as both normalized student, exam, evaluation, and question records and an immutable JSON report snapshot. SmartHTR remains unchanged and does not access this database.
@@ -75,6 +110,8 @@ End-to-end handwritten-sheet evaluation through the shared SmartHTR runtime:
 ```powershell
 python main.py --question-paper inputs/question_paper.pdf --model-answer inputs/model_answer.pdf --student-sheet inputs/student_answer_sheet.pdf --report-id 001
 ```
+
+The same command uses iLovePDF when `OCR_PROVIDER=ilovepdf` is set in the environment. iLovePDF downloads a searchable PDF, then SmartEval extracts its page text locally with PyMuPDF before handing the text to the unchanged evaluation pipeline.
 
 Use `--debug` with `--student-sheet` for page counts, text length, and stage counts. It never prints the full OCR text by default.
 
@@ -141,6 +178,15 @@ Student sheet -> shared-runtime SmartHTR pipeline -> StudentTextProvider -> Smar
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+Focused provider checks:
+
+```powershell
+python -m unittest tests.test_ocr_providers -v
+python -m unittest tests.test_end_to_end -v
+```
+
+The provider tests mock all iLovePDF HTTP calls, including authentication, task start, upload, processing, and download, so they do not consume API credits. The real iLovePDF path requires valid credentials, internet access, and an available account allowance.
 
 The suite covers parsing, mark extraction, mapping, missing inputs, shared-runtime OCR handoff, semantic signals, OCR-tolerance behavior, status classification, marks, deterministic feedback, report assembly, validation, statistics, JSON/text reports, and FastAPI multipart/API error handling. The optional real SmartHTR test is skipped unless `RUN_COLAB_SMARTHTR_TESTS=true` and `SMARTHR_INTEGRATION_FILE` are configured inside the shared Colab runtime.
 

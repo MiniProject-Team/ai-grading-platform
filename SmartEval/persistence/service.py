@@ -152,6 +152,7 @@ class EvaluationPersistenceService:
             question_number=question_number,
             question_text=str(result["question"]),
             max_marks=result["max_marks"],
+            alternative_group=result.get("alternative_group"),
             awarded_marks=marks["awarded"],
             percentage=marks["percentage"],
             status=str(evaluation_data["status"]),

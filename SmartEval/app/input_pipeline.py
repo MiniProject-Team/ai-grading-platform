@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import logging
 
 from config.settings import Settings
 from domain.entities.evaluation_item import EvaluationItem
@@ -41,13 +42,29 @@ class InputPipeline:
         self.model_parser = model_parser or ModelAnswerParser()
         self.student_parser = student_parser or StudentAnswerParser()
         self.mapper = mapper or AnswerMappingService()
+        self.logger = logging.getLogger("smarteval")
 
     def run(self, question_paper: Path, model_answer: Path, student_text: Path) -> InputAnalysis:
         question_text, model_answer_text = self.input_manager.load_teacher_inputs(question_paper, model_answer)
         questions = self.question_parser.parse(question_text)
         model_answers = self.model_parser.parse(model_answer_text)
+        student_text_value = self.input_manager.load_student_text(student_text)
+        self.logger.info("[OCR DEBUG] StudentAnswerParser input length: %s", len(student_text_value))
+        if len(student_text_value) <= 2000:
+            self.logger.info("[OCR DEBUG] Exact StudentAnswerParser input:\n%s", student_text_value)
+        else:
+            self.logger.info("[OCR DEBUG] StudentAnswerParser input preview (first 2000 characters):\n%s", student_text_value[:2000])
+        debug_directory = Path(__file__).resolve().parents[1] / "outputs" / "debug"
+        if debug_directory.is_dir():
+            parser_input_path = debug_directory / "latest_student_parser_input.txt"
+            parser_input_path.write_text(student_text_value, encoding="utf-8")
+            self.logger.info("[OCR DEBUG] Exact StudentAnswerParser input saved to: %s", parser_input_path)
         student_answers = self.student_parser.parse(
-            self.input_manager.load_student_text(student_text),
+            student_text_value,
             expected_question_ids=[question.question_id for question in questions],
+        )
+        self.logger.info(
+            "[OCR DEBUG] Parsed student answers: %s",
+            [(str(answer.question_id), len(answer.answer_text)) for answer in student_answers],
         )
         return InputAnalysis(questions, model_answers, student_answers, self.mapper.map(questions, model_answers, student_answers))

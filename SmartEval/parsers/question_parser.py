@@ -68,13 +68,33 @@ class QuestionParser:
     def _adapt_hierarchy(self, hierarchical) -> list[Question]:
         questions: list[Question] = []
         for parent in hierarchical:
-            pieces = [parent.text] if parent.text else []
-            pieces.extend(f"({child.label}) {child.text}" for child in parent.subquestions)
-            question_text, max_marks = self._extract_marks("\n".join(pieces))
+            parent_id = QuestionId(int(parent.number))
+            if parent.subquestions:
+                for child in parent.subquestions:
+                    question_text, max_marks = self._extract_marks(child.text)
+                    if not question_text:
+                        raise ValueError(f"Question {child.id} has empty text")
+                    questions.append(Question(
+                        QuestionId(int(parent.number), child.label),
+                        int(parent.number),
+                        question_text,
+                        max_marks,
+                        parent_id=parent_id,
+                        subpart=child.label,
+                        alternative_group=parent.alternative_group,
+                    ))
+                continue
+            question_text, max_marks = self._extract_marks(parent.text)
             if not question_text:
                 raise ValueError(f"Question {parent.id} has empty text")
-            questions.append(Question(QuestionId(int(parent.number)), int(parent.number), question_text, max_marks))
-        self.logger.info("Canonical top-level questions adapted for legacy evaluation: %s", len(questions))
+            questions.append(Question(
+                parent_id,
+                int(parent.number),
+                question_text,
+                max_marks,
+                alternative_group=parent.alternative_group,
+            ))
+        self.logger.info("Canonical questions adapted for legacy evaluation: %s", len(questions))
         return questions
 
     @staticmethod

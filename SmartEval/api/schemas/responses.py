@@ -50,6 +50,7 @@ class QuestionResultResponse(_ResponseModel):
     question_id: str
     question: str
     max_marks: int | None
+    alternative_group: str | None = None
     student_answer: str
     model_answer: str | None
     evaluation: EvaluationMetricsResponse

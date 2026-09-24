@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import logging
+import os
 
 import numpy as np
 
@@ -22,6 +23,7 @@ class SentenceTransformerEmbeddingProvider(EmbeddingProvider):
     def encode(self, texts: list[str]) -> np.ndarray:
         if self.model is None:
             try:
+                os.environ.setdefault("USE_TF", "0")
                 from sentence_transformers import SentenceTransformer
                 self.logger.info("Loading semantic model '%s'", self.model_name)
                 self.model = SentenceTransformer(self.model_name)

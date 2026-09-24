@@ -13,7 +13,7 @@ from api.routes import evaluation_router, health_router, question_paper_router
 from api.schemas.responses import ErrorDetailResponse, ErrorResponse
 from config.settings import Settings
 from integration.evaluation_service import EvaluationService
-from integration.smarthtr_client import create_smarthtr_client
+from integration.ocr_factory import create_ocr_service
 from integration.student_text_provider import SharedRuntimeSmartHTRStudentTextProvider, SmartHTRIntegrationService
 from persistence.database import create_database_engine, create_session_factory
 from persistence.service import EvaluationPersistenceService
@@ -48,7 +48,7 @@ def create_app(
 
 
 def _default_service_factory(settings: Settings) -> Callable[[], EvaluationService]:
-    shared_client = create_smarthtr_client(settings)
+    shared_client = create_ocr_service(settings)
 
     def create_service() -> EvaluationService:
         # Keep one SmartHTR model runtime for the application, but give each

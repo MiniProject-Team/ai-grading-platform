@@ -53,12 +53,14 @@ class QuestionEvaluationResult:
     evaluation: EvaluationResult
     marks: MarksResult
     feedback: FeedbackResult
+    alternative_group: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
             "question_id": str(self.question_id),
             "question": self.question_text,
             "max_marks": self.max_marks,
+            "alternative_group": self.alternative_group,
             "student_answer": self.student_answer,
             "model_answer": self.model_answer,
             "evaluation": {

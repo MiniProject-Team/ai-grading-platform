@@ -6,7 +6,7 @@ SmartHTR is a modular full-page handwritten text recognition engine. It accepts 
 
 `DocumentLoader -> ImagePreprocessor -> DocTRDetector -> LineCropper -> LinePreprocessor -> Recognizer -> ReadingOrderReconstructor -> TextExporter`
 
-DocTR is used only for text/line detection. `TrOCRSmallRecognizer` is the current handwritten-recognition baseline, configured with TrOCR Base, and implements the `Recognizer` interface, so a fine-tuned model, TrOCR Large on a GPU machine, or a future SmartHTR recognizer can replace it without changing the pipeline.
+DocTR is used only for text/line detection. `TrOCRSmallRecognizer` is the current handwritten-recognition baseline, configured with TrOCR Large, and implements the `Recognizer` interface, so a fine-tuned model or a future SmartHTR recognizer can replace it without changing the pipeline.
 
 ## Installation
 
@@ -18,7 +18,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-The first run downloads DocTR and `microsoft/trocr-base-handwritten` into `pretrained_models/`.
+The first run downloads DocTR and `microsoft/trocr-large-handwritten` into `pretrained_models/`.
 
 ## Local execution
 
@@ -34,7 +34,7 @@ Text is written per page to `outputs/text/page_001.txt`, `page_002.txt`, and so 
 Configuration lives in `smarthtr/config/settings.py` and can be overridden in `.env`:
 
 ```text
-MODEL_NAME=microsoft/trocr-base-handwritten
+MODEL_NAME=microsoft/trocr-large-handwritten
 DEVICE=auto
 MAX_NEW_TOKENS=128
 NUM_BEAMS=5
@@ -49,7 +49,7 @@ The notebooks in `notebooks/` are small experiment entry points. Open them in VS
 
 ## Current limitations
 
-This is a baseline using TrOCR Base. It has not been fine-tuned on a SmartHTR dataset, and handwriting accuracy depends on scan quality, layout, detection quality, and the underlying pretrained model. Full A4 pages are processed automatically, but CPU processing on an 8 GB laptop can take time.
+This is a baseline using TrOCR Large. It has not been fine-tuned on a SmartHTR dataset, and handwriting accuracy depends on scan quality, layout, detection quality, and the underlying pretrained model. Full A4 pages are processed automatically, but CPU processing on an 8 GB laptop can take time.
 
 ## Future work
 

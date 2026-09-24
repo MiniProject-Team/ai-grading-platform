@@ -22,9 +22,16 @@ class ModelAnswerParser:
         if hierarchical and any(item.subquestions for item in hierarchical):
             result = []
             for parent in hierarchical:
-                pieces = [parent.text] if parent.text else []
-                pieces.extend(f"({child.label}) {child.text}" for child in parent.subquestions)
-                result.append(ModelAnswer(QuestionId(int(parent.number)), "\n".join(pieces).strip()))
+                parent_id = QuestionId(int(parent.number))
+                if parent.subquestions:
+                    result.extend(
+                        ModelAnswer(QuestionId(int(parent.number), child.label), child.text.strip())
+                        for child in parent.subquestions
+                        if child.text.strip()
+                    )
+                    continue
+                if parent.text.strip():
+                    result.append(ModelAnswer(parent_id, parent.text.strip()))
             self._validate_unique(result)
             self.logger.info("Canonical model answers detected: %s", len(result))
             return result

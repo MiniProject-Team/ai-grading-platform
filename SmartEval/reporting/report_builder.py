@@ -36,6 +36,7 @@ class ReportBuilder:
                 evaluation=evaluations_by_id[item.question.question_id],
                 marks=marks_by_id[item.question.question_id],
                 feedback=feedback_by_id[item.question.question_id],
+                alternative_group=item.question.alternative_group,
             )
             for item in items
         ]

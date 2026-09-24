@@ -11,6 +11,9 @@ class Question:
     question_number: int
     question_text: str
     max_marks: int | None
+    parent_id: QuestionId | None = None
+    subpart: str | None = None
+    alternative_group: str | None = None
 
     def __post_init__(self) -> None:
         if self.question_number < 1:
