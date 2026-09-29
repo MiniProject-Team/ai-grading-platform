@@ -23,7 +23,7 @@ export default function Dashboard() {
     } catch (error) { setState({ loading: false, error, totals: {}, recent: [] }); }
   };
   useEffect(() => { load(); }, []);
-  if (state.loading) return <LoadingState label="Loading dashboard..." />;
+  if (state.loading) return <LoadingState label="Loading overview..." />;
   if (state.error) return <ErrorMessage error={state.error} onRetry={load} />;
   return <div className="page-stack"><section className="page-intro"><div><p className="eyebrow">Overview</p><h2>Assessment activity</h2></div><Link className="primary-button" to="/evaluate"><Plus aria-hidden="true" />New Evaluation</Link></section><section className="dashboard-stats" aria-label="Evaluation statistics">{statDefinitions.map(([label, Icon, key]) => <article className="stat-card" key={key}><Icon aria-hidden="true" /><span>{label}</span><strong>{state.totals[key] ?? 0}</strong></article>)}</section><section className="content-section"><div className="section-heading"><div><p className="eyebrow">Recent activity</p><h2>Recent evaluations</h2></div><Link className="text-link" to="/evaluations">View all</Link></div>{state.recent.length ? <EvaluationTable evaluations={state.recent} /> : <EmptyState detail="Start by submitting an answer sheet for evaluation." action={<Link className="primary-button" to="/evaluate"><Plus />New Evaluation</Link>} />}</section></div>;
 }
