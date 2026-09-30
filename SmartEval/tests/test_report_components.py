@@ -36,7 +36,7 @@ class SummaryBuilderTests(unittest.TestCase):
         self.assertEqual(summary.awarded_marks, 23.0)
         self.assertEqual(summary.evaluated_maximum_marks, 40)
         self.assertEqual(summary.exam_maximum_marks, 50)
-        self.assertEqual(summary.percentage, 57.5)
+        self.assertEqual(summary.percentage, 46.0)
 
 
 class StatisticsBuilderTests(unittest.TestCase):

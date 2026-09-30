@@ -121,6 +121,13 @@ class APISubquestionTests(unittest.TestCase):
             "Q3(a)", "Q3(b)", "Q4(a)", "Q4(b)",
         ]
         self.assertEqual(payload["summary"]["total_questions"], 8)
+        self.assertEqual(payload["summary"]["exam_maximum_marks"], 15)
+        self.assertEqual(payload["summary"]["evaluated_maximum_marks"], 15)
+        # All question results remain, but only one complete side per OR group counts.
+        self.assertEqual(payload["summary"]["awarded_marks"], 12)
+        self.assertEqual(payload["summary"]["percentage"], 80)
+        self.assertFalse(any("policy" in warning for warning in payload["warnings"]))
+        self.assertEqual(payload["summary"]["or_groups"]["OR_1"]["selected_alternative"], "Q1")
         self.assertEqual([result["question_id"] for result in results], expected_ids)
         self.assertEqual([result["max_marks"] for result in results], [4, 3, 4, 3, 4, 4, 4, 4])
         self.assertTrue(all(result["max_marks"] is not None and result["max_marks"] > 0 for result in results))

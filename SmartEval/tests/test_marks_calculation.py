@@ -69,7 +69,7 @@ class MarksCalculatorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             question(max_marks=0)
 
-    def test_total_uses_evaluated_maximum_not_exam_maximum_when_model_missing(self):
+    def test_total_uses_paper_maximum_when_model_missing(self):
         marks = [
             self.calculator.calculate(question(1, 10), evaluation(1, semantic=.8, concept=.8, relevance=.8, completeness=.8)),
             self.calculator.calculate(question(2, 20), evaluation(2, semantic=.5, concept=.5, relevance=.5, completeness=.5, status="partially_correct")),
@@ -79,6 +79,6 @@ class MarksCalculatorTests(unittest.TestCase):
         self.assertEqual(total.awarded_marks, 18.0)
         self.assertEqual(total.evaluated_maximum_marks, 30)
         self.assertEqual(total.exam_maximum_marks, 40)
-        self.assertEqual(total.percentage, 60.0)
+        self.assertEqual(total.percentage, 45.0)
         self.assertEqual(total.missing_model_answers, 1)
         self.assertEqual(total.unevaluated_questions, (QuestionId(3),))

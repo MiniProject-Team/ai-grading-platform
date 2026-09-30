@@ -12,7 +12,7 @@ from .section_parser import NumberedSectionParser
 HEADING_PATTERN = re.compile(
     r"^\s*(?:(?P<prefix>q(?:uestion)?|ans(?:wer)?(?:\s+(?:no\.?|number))?)\s*\.?\s*)?"
     r"(?P<number>\d+)\s*"
-    r"(?:(?:\(\s*(?P<subpart_paren>[a-z])\s*\))|(?:[.)]\s*(?P<subpart_delimited>[a-z])\s*[.)]?))?"
+    r"(?:(?:\(\s*(?P<subpart_paren>[a-z])\s*\))|(?:[.)]\s*(?P<subpart_delimited>[a-z])(?=[\s.)]|$)\s*[.)]?))?"
     r"(?P<bare_delimiter>[.):])?\s*(?:[:.-]\s*)?(?P<body>.*)$",
     re.IGNORECASE,
 )
@@ -42,7 +42,9 @@ class StudentAnswerParser:
                 current_id = candidate
                 current_lines = [match.group("body").strip()] if match.group("body").strip() else []
                 continue
-            if heading_like and candidate is not None and candidate.subpart is None and expected:
+            # A bare numbered list item is not a parent answer heading when
+            # the paper expects subparts. Require Q/Question/Answer evidence.
+            if heading_like and match.group("prefix") and candidate is not None and candidate.subpart is None and expected:
                 parent_expected = any(
                     item.number == candidate.number and item.subpart is not None
                     for item in expected

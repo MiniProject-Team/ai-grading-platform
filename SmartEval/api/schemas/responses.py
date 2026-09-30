@@ -58,7 +58,22 @@ class QuestionResultResponse(_ResponseModel):
     feedback: FeedbackResponse
 
 
+class ORAlternativeResponse(_ResponseModel):
+    question_group: str
+    earned: float
+    maximum: int
+    counted: bool
+
+
+class ORGroupResponse(_ResponseModel):
+    alternatives: list[ORAlternativeResponse]
+    selected_alternative: str
+    counted_earned: float
+    effective_maximum: int
+
+
 class SummaryResponse(_ResponseModel):
+    or_groups: dict[str, ORGroupResponse] = Field(default_factory=dict)
     total_questions: int
     evaluated_questions: int
     unanswered_questions: int

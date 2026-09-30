@@ -20,4 +20,4 @@ class MarksPipeline:
     def run(self, question_paper: Path, model_answer: Path, student_text: Path) -> tuple[InputAnalysis, list[MarksResult], TotalMarksResult]:
         analysis, evaluations = self.evaluation_pipeline.run(question_paper, model_answer, student_text)
         marks = [self.marks_calculator.calculate(item.question, result) for item, result in zip(analysis.items, evaluations)]
-        return analysis, marks, self.total_calculator.calculate(marks)
+        return analysis, marks, self.total_calculator.calculate(marks, analysis.questions)

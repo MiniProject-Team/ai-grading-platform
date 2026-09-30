@@ -1,0 +1,61 @@
+KAVIKULGURU INSTITUTE OF TECHNOLOGY AND SCIENCE, RAMTEK
+FIRST MID SESSIONAL EXAMINATION (2026-27)
+B.TECH. SEVENTH SEMESTER INFORMATION TECHNOLOGY
+SUBJECT: ELECTIVE-V NATURAL LANGUAGE PROCESSING (BTIIT703T.1)
+Date: 19/08/2026 (AN)
+Max Marks: 15
+Max Time: 1hr.
+Note: Assume suitable date wherever necessary.
+Q. No
+Description
+Marks
+C.O.
+Q.1
+a)
+Explain the steps involved in text preprocessing and normalization tokenization, stop-word
+removal, stemming, and lemmatization. Illustrate each step with a suitable example
+sentence
+4
+703.1
+b)
+Explain the concept of text preprocessing with example.
+3
+703.1
+OR
+Q.2
+a)
+Define Natural Language Processing. Explain its scope and describe any four real-world
+applications of NLP (e.g., machine translation, sentiment analysis, chatbots, speech
+recognition).
+4
+703.1
+b)
+Define Linguistics. Explain the concept in detail.
+3
+703.1
+Q.3
+a)
+Explain test categorization of test in detail.
+4
+703.2
+b)
+Explain various n-gram model in detail.
+4
+703.2
+OR
+Q.4
+a)
+Explain the Naive Bayes algorithm for text classification. Illustrate with document is
+classified into a category using Naive Bayes algorithm. Take appropriate working example
+to demonstrate it.
+4
+703.2
+b)
+Compare Decision Tree and Support Vector Machine (SVM) classifiers for text classification
+in terms of working principle, advantages, disadvantages, and suitability for
+high-dimensional text data
+4
+703.2
+PAPER SET BY
+Ms. ANKITA S. NATHE
+ASSISTANT PROFESSOR (ITD)

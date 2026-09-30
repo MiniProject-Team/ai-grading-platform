@@ -107,7 +107,9 @@ class EvaluationSummary:
     exam_maximum_marks: int
     percentage: float | None
 
-    def to_dict(self) -> dict[str, int | float | None]:
+    or_groups: dict[str, dict] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, object]:
         return {
             "total_questions": self.total_questions,
             "evaluated_questions": self.evaluated_questions,
@@ -117,6 +119,7 @@ class EvaluationSummary:
             "evaluated_maximum_marks": self.evaluated_maximum_marks,
             "exam_maximum_marks": self.exam_maximum_marks,
             "percentage": self.percentage,
+            "or_groups": self.or_groups,
         }
 
 

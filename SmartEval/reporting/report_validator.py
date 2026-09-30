@@ -3,8 +3,11 @@ from __future__ import annotations
 from math import isclose
 
 from domain.entities.evaluation_report import EvaluationReport
+from evaluation.marks.effective_max_marks import calculate_effective_max_marks
 
 from .exceptions import ReportValidationError
+from evaluation.marks.effective_earned_marks import calculate_effective_earned_marks
+from evaluation.marks.rounding import RoundingPolicy
 
 
 class ReportValidator:
@@ -19,9 +22,12 @@ class ReportValidator:
         if len(set(question_ids)) != len(question_ids):
             raise ReportValidationError("Evaluation report contains duplicate question IDs")
 
-        awarded_marks = 0.0
-        evaluated_maximum = 0
-        exam_maximum = 0
+        aggregation = calculate_effective_earned_marks([r.marks for r in question_results], list(question_results))
+        awarded_marks = aggregation.earned
+        exam_maximum = calculate_effective_max_marks(question_results)
+        evaluated_maximum = calculate_effective_max_marks(
+            result for result in question_results if result.marks.marks_awarded is not None
+        )
         evaluated_questions = 0
         missing_model_answers = 0
         unanswered_questions = 0
@@ -33,7 +39,6 @@ class ReportValidator:
             if marks.max_marks is not None:
                 if marks.max_marks <= 0:
                     raise ReportValidationError(f"{result.question_id} maximum marks must be positive")
-                exam_maximum += marks.max_marks
             if marks.marks_awarded is None:
                 partially_evaluated = True
             else:
@@ -43,8 +48,6 @@ class ReportValidator:
                     raise ReportValidationError(f"{result.question_id} awarded marks are outside the valid range")
                 if marks.percentage is None or not 0 <= marks.percentage <= 100:
                     raise ReportValidationError(f"{result.question_id} percentage is outside the valid range")
-                awarded_marks += marks.marks_awarded
-                evaluated_maximum += marks.max_marks
                 evaluated_questions += 1
             if result.evaluation.status == "model_answer_missing":
                 missing_model_answers += 1
@@ -62,12 +65,14 @@ class ReportValidator:
         )
         if any(actual != expected for actual, expected in expected_totals):
             raise ReportValidationError("Report summary totals do not match question results")
-        if not isclose(summary.awarded_marks, awarded_marks, rel_tol=0, abs_tol=1e-9):
+        if not any(isclose(summary.awarded_marks, RoundingPolicy(places).round_marks(awarded_marks), rel_tol=0, abs_tol=1e-9) for places in (0, 1, 2)):
             raise ReportValidationError("Report awarded marks do not match question results")
-        expected_percentage = round(awarded_marks / evaluated_maximum * 100, 2) if evaluated_maximum else None
+        expected_percentage = round(awarded_marks / exam_maximum * 100, 2) if exam_maximum else None
         if summary.percentage is None and expected_percentage is not None:
             raise ReportValidationError("Report percentage is missing")
-        if summary.percentage is not None and (not 0 <= summary.percentage <= 100 or not isclose(summary.percentage, expected_percentage, rel_tol=0, abs_tol=0.01)):
+        if summary.or_groups != aggregation.or_groups:
+            raise ReportValidationError("Report OR selections do not match question results")
+        if summary.percentage is not None and (expected_percentage is None or not isclose(summary.percentage, expected_percentage, rel_tol=0, abs_tol=0.01)):
             raise ReportValidationError("Report percentage does not match evaluated marks")
         partially_evaluated = partially_evaluated or report.metadata.get("ocr_status") == "partially_processed"
         expected_status = "partially_evaluated" if partially_evaluated else "complete"

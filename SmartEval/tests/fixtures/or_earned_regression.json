@@ -1,0 +1,279 @@
+{
+  "source_report": "evaluation_6fa530b1ca8c5057a7c05d4c4742f6ed.json",
+  "old_summary": {
+    "total_questions": 8,
+    "evaluated_questions": 8,
+    "unanswered_questions": 0,
+    "missing_model_answers": 0,
+    "awarded_marks": 22.7,
+    "evaluated_maximum_marks": 15,
+    "exam_maximum_marks": 15,
+    "percentage": 151.33
+  },
+  "questions": [
+    {
+      "question_id": "Q1(a)",
+      "alternative_group": "OR_1",
+      "marks": {
+        "awarded": 3.2,
+        "maximum": 4,
+        "percentage": 80.0,
+        "status": "mostly_correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.9062505013104878,
+            "weight": 0.4,
+            "contribution": 0.3625002005241951
+          },
+          "concept_coverage": {
+            "score": 0.6933286804937829,
+            "weight": 0.3,
+            "contribution": 0.20799860414813487
+          },
+          "relevance": {
+            "score": 0.8268074806496177,
+            "weight": 0.15,
+            "contribution": 0.12402112209744265
+          },
+          "completeness": {
+            "score": 0.6933286804937829,
+            "weight": 0.15,
+            "contribution": 0.10399930207406743
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q1(b)",
+      "alternative_group": "OR_1",
+      "marks": {
+        "awarded": 2.2,
+        "maximum": 3,
+        "percentage": 73.33,
+        "status": "mostly_correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.8199352892003969,
+            "weight": 0.4,
+            "contribution": 0.3279741156801588
+          },
+          "concept_coverage": {
+            "score": 0.6448521518907211,
+            "weight": 0.3,
+            "contribution": 0.1934556455672163
+          },
+          "relevance": {
+            "score": 0.7267798021307643,
+            "weight": 0.15,
+            "contribution": 0.10901697031961465
+          },
+          "completeness": {
+            "score": 0.6448521518907211,
+            "weight": 0.15,
+            "contribution": 0.09672782278360816
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q2(a)",
+      "alternative_group": "OR_1",
+      "marks": {
+        "awarded": 3.3,
+        "maximum": 4,
+        "percentage": 82.5,
+        "status": "correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.8968432113045341,
+            "weight": 0.4,
+            "contribution": 0.3587372845218137
+          },
+          "concept_coverage": {
+            "score": 0.7182108971486932,
+            "weight": 0.3,
+            "contribution": 0.21546326914460798
+          },
+          "relevance": {
+            "score": 0.8746632143598252,
+            "weight": 0.15,
+            "contribution": 0.13119948215397378
+          },
+          "completeness": {
+            "score": 0.7182108971486932,
+            "weight": 0.15,
+            "contribution": 0.10773163457230399
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q2(b)",
+      "alternative_group": "OR_1",
+      "marks": {
+        "awarded": 2.3,
+        "maximum": 3,
+        "percentage": 76.67,
+        "status": "mostly_correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.9275764762755622,
+            "weight": 0.4,
+            "contribution": 0.3710305905102249
+          },
+          "concept_coverage": {
+            "score": 0.6520175008840967,
+            "weight": 0.3,
+            "contribution": 0.195605250265229
+          },
+          "relevance": {
+            "score": 0.7767628662656662,
+            "weight": 0.15,
+            "contribution": 0.11651442993984992
+          },
+          "completeness": {
+            "score": 0.6520175008840967,
+            "weight": 0.15,
+            "contribution": 0.0978026251326145
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q3(a)",
+      "alternative_group": "OR_2",
+      "marks": {
+        "awarded": 2.9,
+        "maximum": 4,
+        "percentage": 72.5,
+        "status": "irrelevant",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.9267239721955499,
+            "weight": 0.4,
+            "contribution": 0.37068958887822
+          },
+          "concept_coverage": {
+            "score": 0.6624066562273817,
+            "weight": 0.3,
+            "contribution": 0.1987219968682145
+          },
+          "relevance": {
+            "score": 0.39553757406324175,
+            "weight": 0.15,
+            "contribution": 0.05933063610948626
+          },
+          "completeness": {
+            "score": 0.6624066562273817,
+            "weight": 0.15,
+            "contribution": 0.09936099843410726
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q3(b)",
+      "alternative_group": "OR_2",
+      "marks": {
+        "awarded": 3.1,
+        "maximum": 4,
+        "percentage": 77.5,
+        "status": "mostly_correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.9204718578595875,
+            "weight": 0.4,
+            "contribution": 0.36818874314383504
+          },
+          "concept_coverage": {
+            "score": 0.6271455310180758,
+            "weight": 0.3,
+            "contribution": 0.18814365930542273
+          },
+          "relevance": {
+            "score": 0.7539992862089056,
+            "weight": 0.15,
+            "contribution": 0.11309989293133582
+          },
+          "completeness": {
+            "score": 0.6271455310180758,
+            "weight": 0.15,
+            "contribution": 0.09407182965271137
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q4(a)",
+      "alternative_group": "OR_2",
+      "marks": {
+        "awarded": 2.7,
+        "maximum": 4,
+        "percentage": 67.5,
+        "status": "partially_correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.7902361561459045,
+            "weight": 0.4,
+            "contribution": 0.3160944624583618
+          },
+          "concept_coverage": {
+            "score": 0.6017010814024754,
+            "weight": 0.3,
+            "contribution": 0.1805103244207426
+          },
+          "relevance": {
+            "score": 0.599418008565544,
+            "weight": 0.15,
+            "contribution": 0.08991270128483159
+          },
+          "completeness": {
+            "score": 0.6017010814024754,
+            "weight": 0.15,
+            "contribution": 0.0902551622103713
+          }
+        }
+      }
+    },
+    {
+      "question_id": "Q4(b)",
+      "alternative_group": "OR_2",
+      "marks": {
+        "awarded": 3.0,
+        "maximum": 4,
+        "percentage": 75.0,
+        "status": "mostly_correct",
+        "note": null,
+        "breakdown": {
+          "semantic_similarity": {
+            "score": 0.8662728059507699,
+            "weight": 0.4,
+            "contribution": 0.346509122380308
+          },
+          "concept_coverage": {
+            "score": 0.6508556169380894,
+            "weight": 0.3,
+            "contribution": 0.1952566850814268
+          },
+          "relevance": {
+            "score": 0.7790762045012122,
+            "weight": 0.15,
+            "contribution": 0.11686143067518182
+          },
+          "completeness": {
+            "score": 0.6508556169380894,
+            "weight": 0.15,
+            "contribution": 0.0976283425407134
+          }
+        }
+      }
+    }
+  ]
+}

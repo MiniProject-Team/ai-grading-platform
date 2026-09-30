@@ -37,6 +37,6 @@ class FeedbackPipeline:
     ) -> tuple[InputAnalysis, list[EvaluationResult], list[MarksResult], TotalMarksResult, list[FeedbackResult]]:
         analysis, evaluations = self.evaluation_pipeline.run(question_paper, model_answer, student_text)
         marks = [self.marks_calculator.calculate(item.question, result) for item, result in zip(analysis.items, evaluations, strict=True)]
-        total = self.total_calculator.calculate(marks)
+        total = self.total_calculator.calculate(marks, analysis.questions)
         feedback = self.feedback_service.generate(analysis.items, evaluations, marks)
         return analysis, evaluations, marks, total, feedback

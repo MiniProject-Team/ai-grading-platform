@@ -34,7 +34,7 @@ class TextReportExporter:
             report.status.replace("_", " ").upper(),
             "",
             "Total Marks:",
-            f"{summary.awarded_marks} / {summary.evaluated_maximum_marks}",
+            f"{summary.awarded_marks} / {summary.exam_maximum_marks}",
             "",
             "Percentage:",
             "Unavailable" if summary.percentage is None else f"{summary.percentage}%",
@@ -68,10 +68,12 @@ class TextReportExporter:
             f"Questions: {summary.total_questions}",
             f"Evaluated: {summary.evaluated_questions}",
             f"Unanswered: {summary.unanswered_questions}",
-            f"Total: {summary.awarded_marks} / {summary.evaluated_maximum_marks}",
+            f"Total: {summary.awarded_marks} / {summary.exam_maximum_marks}",
             f"Exam Maximum: {summary.exam_maximum_marks}",
             "Percentage: Unavailable" if summary.percentage is None else f"Percentage: {summary.percentage}%",
         ])
+        for group, selection in summary.or_groups.items():
+            lines.append(f"{group}: Counted {selection['selected_alternative']} (highest earned total; first in paper order on ties)")
         if report.warnings:
             lines.extend(["", "WARNINGS"])
             lines.extend(f"- {warning}" for warning in report.warnings)

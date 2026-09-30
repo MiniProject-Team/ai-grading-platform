@@ -10,5 +10,5 @@ export default function EvaluationSummary({ evaluation }) {
     <div className="summary-stat"><Percent aria-hidden="true" /><span>Percentage</span><strong>{formatPercentage(summary.percentage)}</strong></div>
     <div className="summary-stat"><ClipboardList aria-hidden="true" /><span>Evaluated</span><strong>{summary.evaluated_questions ?? 0} <small>/ {summary.total_questions ?? 0}</small></strong></div>
     <div className="summary-stat"><UserRound aria-hidden="true" /><span>Unanswered</span><strong>{summary.unanswered_questions ?? 0}</strong></div>
-  </div></section>;
+  </div>{Object.entries(summary.or_groups || {}).map(([group, selection]) => <p key={group} className="alternative-group">{group}: Counted {selection.selected_alternative} (highest earned total; first in paper order on ties)</p>)}</section>;
 }

@@ -19,4 +19,5 @@ class SummaryBuilder:
             evaluated_maximum_marks=total_marks.evaluated_maximum_marks,
             exam_maximum_marks=total_marks.exam_maximum_marks,
             percentage=total_marks.percentage,
+            or_groups=total_marks.or_groups,
         )

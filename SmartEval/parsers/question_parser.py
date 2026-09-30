@@ -25,6 +25,14 @@ class QuestionParser:
         self.logger = logging.getLogger("smarteval")
 
     def parse(self, text: str) -> list[Question]:
+        # PDF tables place marks and course-outcome cells on separate lines.
+        # Only interpret this layout when both column headers are present and
+        # an integer marks cell is immediately followed by a dotted C.O. code.
+        if re.search(r"(?im)^\s*Marks\s*$", text) and re.search(r"(?im)^\s*C\.O\.\s*$", text):
+            text = re.sub(
+                r"(?m)^\s*(\d{1,2})[ \t]*\r?\n(?=[ \t]*\d{3}\.\d+[ \t]*(?:\r?$))",
+                r"[\1]\n", text,
+            )
         # Resolve hierarchy before adapting to the flat legacy evaluator. This
         # prevents one parent (Q4) plus its a/b rows or an OR block from being
         # emitted as duplicate top-level Question objects.

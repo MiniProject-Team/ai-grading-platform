@@ -15,3 +15,5 @@ class TotalMarksResult:
     missing_model_answers: int
     unanswered_questions: int
     unevaluated_questions: tuple[QuestionId, ...] = field(default_factory=tuple)
+
+    or_groups: dict[str, dict] = field(default_factory=dict)

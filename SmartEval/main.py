@@ -64,7 +64,7 @@ def main() -> int:
         print(f"OCR: {execution.ocr_result.status.upper() if execution.ocr_result else 'FAILED'}")
         print(f"Questions: {report.summary.total_questions}")
         print(f"Evaluated: {report.summary.evaluated_questions}")
-        print(f"Marks: {report.summary.awarded_marks} / {report.summary.evaluated_maximum_marks}")
+        print(f"Marks: {report.summary.awarded_marks} / {report.summary.exam_maximum_marks}")
         print(f"Percentage: {'Unavailable' if report.summary.percentage is None else f'{report.summary.percentage}%'}")
         print(f"Status: {report.status.upper()}")
         print(f"Report: {execution.json_report_path}")
@@ -129,7 +129,7 @@ def main() -> int:
         print("SMART EVAL EVALUATION REPORT")
         print(f"Report ID: {report.report_id}")
         print(f"Status: {report.status}")
-        print(f"Total: {report.summary.awarded_marks}/{report.summary.evaluated_maximum_marks} ({report.summary.percentage}%)")
+        print(f"Total: {report.summary.awarded_marks}/{report.summary.exam_maximum_marks} ({report.summary.percentage}%)")
         print(f"JSON: {json_path}")
         print(f"Text: {text_path}")
         return 0
@@ -150,7 +150,7 @@ def main() -> int:
         print("\nMarks:")
         for result in marks_results:
             print(f"{result.question_id}: {result.marks_awarded}/{result.max_marks} ({result.evaluation_status})")
-        print(f"Total: {total_marks.awarded_marks}/{total_marks.evaluated_maximum_marks} ({total_marks.percentage}%)")
+        print(f"Total: {total_marks.awarded_marks}/{total_marks.exam_maximum_marks} ({total_marks.percentage}%)")
         if total_marks.unevaluated_questions:
             print("Unevaluated: " + ", ".join(str(question_id) for question_id in total_marks.unevaluated_questions))
     if feedback_results:
