@@ -16,6 +16,7 @@ from parsers.question_parser import QuestionParser
 from parsers.student_answer_parser import StudentAnswerParser
 from services.answer_mapping_service import AnswerMappingService
 from services.input_manager import InputManager
+from .progress import report_progress
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,9 +46,11 @@ class InputPipeline:
         self.logger = logging.getLogger("smarteval")
 
     def run(self, question_paper: Path, model_answer: Path, student_text: Path) -> InputAnalysis:
+        report_progress("uploading", "Reading the question paper and model answers.")
         question_text, model_answer_text = self.input_manager.load_teacher_inputs(question_paper, model_answer)
         questions = self.question_parser.parse(question_text)
         model_answers = self.model_parser.parse(model_answer_text)
+        report_progress("reading", "Reading handwritten answers from the student sheet.")
         student_text_value = self.input_manager.load_student_text(student_text)
         self.logger.info("[OCR DEBUG] StudentAnswerParser input length: %s", len(student_text_value))
         if len(student_text_value) <= 2000:
@@ -63,6 +66,7 @@ class InputPipeline:
             student_text_value,
             expected_question_ids=[question.question_id for question in questions],
         )
+        report_progress("analyzing", f"Identified {len(student_answers)} student answers. Matching them to questions.")
         self.logger.info(
             "[OCR DEBUG] Parsed student answers: %s",
             [(str(answer.question_id), len(answer.answer_text)) for answer in student_answers],

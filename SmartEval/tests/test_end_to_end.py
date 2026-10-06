@@ -1,6 +1,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from app.progress import progress_callback
 
 from config.settings import Settings
 from domain.entities.evaluation_item import EvaluationItem
@@ -92,6 +93,18 @@ class EndToEndEvaluationTests(unittest.TestCase):
         self.assertTrue(result.json_report_path.exists())
         self.assertTrue(result.text_report_path.exists())
         self.assertEqual(result.json_report_path.name, "evaluation_001.json")
+
+    def test_progress_follows_real_pipeline_stages(self):
+        events = []
+        token = progress_callback.set(lambda stage, message: events.append((stage, message)))
+        try:
+            result = self.service(_Client(ocr_result())).evaluate_and_export(self.request())
+        finally:
+            progress_callback.reset(token)
+        self.assertEqual(result.report.status, "complete")
+        stages = list(dict.fromkeys(stage for stage, _ in events))
+        self.assertEqual(stages, ["uploading", "reading", "analyzing", "marks", "feedback", "report"])
+        self.assertTrue(any("answer 2 of 2" in message for _, message in events))
 
     def test_missing_question_paper_returns_failed_report(self):
         report = self.service(_Client(ocr_result())).evaluate(self.request(question_paper_path=self.root / "missing.txt"))

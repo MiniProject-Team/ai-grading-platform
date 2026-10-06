@@ -19,6 +19,10 @@ export function getEvaluation(evaluationId) {
   return request(`/api/v1/evaluations/${encodeURIComponent(evaluationId)}`);
 }
 
+export function getEvaluationProgress(idempotencyKey, signal) {
+  return request(`/api/v1/evaluation-progress/${encodeURIComponent(idempotencyKey)}`, { signal, timeoutMs: 10000 });
+}
+
 export function getEvaluations({ page = 1, pageSize = 20, studentId, examId, status } = {}) {
   const parameters = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
   if (studentId) parameters.set('student_id', studentId);

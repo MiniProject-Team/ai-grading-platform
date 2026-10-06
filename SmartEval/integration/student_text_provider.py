@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 from services.student_text_provider import StudentTextProvider
+from app.progress import report_progress
 
 from .ocr_service import OCRResult
 from .smarthtr_client import SmartHTRClientError
@@ -52,17 +53,18 @@ class SmartHTRIntegrationService:
             "[OCR] Provider=%s status=%s pages=%s text_length=%s duration=%.2fs warnings=%s",
             result.provider,
             result.status,
-            len(result.pages),
+            result.pages_processed,
             len(result.full_text),
             time.perf_counter() - started,
             len(result.warnings),
         )
+        report_progress("reading", f"Handwriting recognition complete: {result.pages_processed} pages, {len(result.full_text):,} characters extracted.")
         return result
 
     def _log_raw_ocr_diagnostics(self, result: OCRResult) -> None:
         self.logger.info("[OCR DEBUG] Provider: %s", result.provider)
         self.logger.info("[OCR DEBUG] Status: %s", result.status)
-        self.logger.info("[OCR DEBUG] Page count: %s", len(result.pages))
+        self.logger.info("[OCR DEBUG] Page count: %s", result.pages_processed)
         self.logger.info("[OCR DEBUG] Total text length: %s", len(result.full_text))
         self.logger.info("[OCR DEBUG] Raw OCR first 2000 characters:\n%s", result.full_text[:2000])
         for page in result.pages:

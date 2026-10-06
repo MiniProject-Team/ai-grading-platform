@@ -6,13 +6,14 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
-from fastapi import APIRouter, File, Form, Header, Query, Request, UploadFile
+from fastapi import APIRouter, File, Form, Header, Query, Request, Response, UploadFile
 from starlette.concurrency import run_in_threadpool
 
 from api.errors import APIProblem
 from api.file_storage import UploadStorage, UploadWorkspace
 from api.schemas.requests import EvaluationMetadataRequest
 from api.schemas.responses import EvaluationHistoryItemResponse, EvaluationListResponse, EvaluationResponse
+from app.progress import progress_callback
 from integration.evaluation_service import EvaluationRequest
 from persistence.service import EvaluationPersistenceService, PersistedEvaluation, PersistenceError
 
@@ -58,6 +59,9 @@ async def evaluate(
     )
     started = time.perf_counter()
     logger.info("API evaluation request received: %s", evaluation_id)
+    progress = request.app.state.evaluation_progress
+    progress.update(evaluation_id, "uploading", "Receiving and validating uploaded files.")
+    token = progress_callback.set(lambda stage, message: progress.update(evaluation_id, stage, message))
     try:
         with UploadWorkspace(settings.temp_directory, settings.keep_input_files, evaluation_id) as workspace:
             assert workspace.path is not None
@@ -83,12 +87,17 @@ async def evaluate(
             service = request.app.state.evaluation_service_factory()
             execution = await run_in_threadpool(service.evaluate_and_export, evaluation_request)
     except APIProblem:
+        progress.update(evaluation_id, "failed", "Uploaded files could not be processed.", "failed")
         raise
     except Exception as error:
         logger.exception("API evaluation request failed: %s", evaluation_id)
+        progress.update(evaluation_id, "failed", "The evaluation request could not be completed.", "failed")
         raise APIProblem(500, "INTERNAL_ERROR", "The evaluation request could not be completed.", evaluation_id) from error
+    finally:
+        progress_callback.reset(token)
 
     report = replace(execution.report, report_id=evaluation_id)
+    progress.update(evaluation_id, "report", "Saving the evaluation report.")
     try:
         persistence = _persistence_service(request, evaluation_id)
         await run_in_threadpool(
@@ -99,18 +108,31 @@ async def evaluate(
             student_answer_filename=student_answer_sheet.filename,
         )
     except APIProblem:
+        progress.update(evaluation_id, "failed", "The evaluation report could not be saved.", "failed")
         raise
     except PersistenceError as error:
         logger.exception("Evaluation persistence failed: %s", evaluation_id)
         if settings.persistence_failure_is_error:
+            progress.update(evaluation_id, "failed", "The evaluation report could not be saved.", "failed")
             raise APIProblem(503, "DATABASE_UNAVAILABLE", "The evaluation was completed but could not be saved.", evaluation_id) from error
         logger.warning("Evaluation completed without persistence: %s", evaluation_id)
     if report.status == "failed":
         problem = _failed_report_problem(report.warnings[0] if report.warnings else "Evaluation failed.", evaluation_id)
         logger.warning("API evaluation failed: %s code=%s", evaluation_id, problem.code)
+        progress.update(evaluation_id, "failed", problem.message, "failed")
         raise problem
     logger.info("API evaluation completed: %s status=%s duration=%.2fs", evaluation_id, report.status, time.perf_counter() - started)
+    progress.update(evaluation_id, "complete", "Evaluation complete. Opening your report.", "complete")
     return _response_from_payload(evaluation_id, report.to_dict())
+
+
+@router.get("/evaluation-progress/{idempotency_key}")
+async def get_evaluation_progress(request: Request, response: Response, idempotency_key: str) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    snapshot = request.app.state.evaluation_progress.get(_evaluation_id(idempotency_key))
+    if snapshot is None:
+        return {"status": "pending", "stage": "uploading", "message": "Uploading files…", "events": []}
+    return snapshot
 
 
 @router.get("/evaluations/{evaluation_id}", response_model=EvaluationResponse)

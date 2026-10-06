@@ -11,8 +11,8 @@ from .section_parser import NumberedSectionParser
 
 HEADING_PATTERN = re.compile(
     r"^\s*(?:(?P<prefix>q(?:uestion)?|ans(?:wer)?(?:\s+(?:no\.?|number))?)\s*\.?\s*)?"
-    r"(?P<number>\d+)\s*"
-    r"(?:(?:\(\s*(?P<subpart_paren>[a-z])\s*\))|(?:[.)]\s*(?P<subpart_delimited>[a-z])(?=[\s.)]|$)\s*[.)]?))?"
+    r"(?P<number>\d+|(?<=[\s.])[lI](?=\s*(?:\(|[a-z]\s*\))))\s*"
+    r"(?:(?:\(\s*(?P<subpart_paren>[a-z])\s*\))|(?:(?P<subpart_bare>[a-z])\s*\))|(?:[.)]\s*(?P<subpart_delimited>[a-z])(?=[\s.)]|$)\s*[.)]?))?"
     r"(?P<bare_delimiter>[.):])?\s*(?:[:.-]\s*)?(?P<body>.*)$",
     re.IGNORECASE,
 )
@@ -79,10 +79,20 @@ class StudentAnswerParser:
     def _candidate_id(match: re.Match[str] | None) -> QuestionId | None:
         if match is None:
             return None
-        subpart = match.group("subpart_paren") or match.group("subpart_delimited")
+        subpart = match.group("subpart_paren") or match.group("subpart_delimited") or match.group("subpart_bare")
         if subpart is None and not match.group("prefix") and not match.group("bare_delimiter"):
             return None
-        return QuestionId(int(match.group("number")), subpart.lower() if subpart else None)
+        number_text = match.group("number")
+        # OCR can confuse 1 with l/I in an explicit subquestion heading.
+        if number_text.lower() in {"l", "i"}:
+            if not match.group("prefix") or subpart is None:
+                return None
+            number_text = "1"
+        number = int(number_text)
+        # Numeric answer content (e.g. 0.00010) is not a question ID.
+        if number < 1:
+            return None
+        return QuestionId(number, subpart.lower() if subpart else None)
 
     @staticmethod
     def _is_heading_like(match: re.Match[str]) -> bool:
@@ -90,6 +100,7 @@ class StudentAnswerParser:
             match.group("prefix")
             or match.group("subpart_paren")
             or match.group("subpart_delimited")
+            or match.group("subpart_bare")
             or match.group("bare_delimiter")
         )
 

@@ -1,12 +1,15 @@
 from dataclasses import replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 import unittest
 
 from fastapi.testclient import TestClient
 
 from api.app import _default_service_factory, create_app
 from api.routes.evaluation import _failed_report_problem
+from app.progress import report_progress
 from config.settings import Settings
 from integration.evaluation_service import EndToEndEvaluationResult
 from reporting.evaluation_report_generator import EvaluationReportGenerator
@@ -78,6 +81,41 @@ class APIEvaluationTests(unittest.TestCase):
         response = self.client(_EvaluationService(self.complete_report)).get("/health")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "ok", "service": "SmartEval"})
+
+    def test_progress_is_available_while_evaluation_is_running(self):
+        entered = Event()
+        release = Event()
+        report = self.complete_report
+
+        class BlockingService(_EvaluationService):
+            def evaluate_and_export(self, request):
+                report_progress("reading", "OCR reading attempt 1: 2,955 characters extracted.")
+                entered.set()
+                if not release.wait(5):
+                    raise RuntimeError("Test did not release evaluation")
+                return super().evaluate_and_export(request)
+
+        with self.client(BlockingService(report)) as client, ThreadPoolExecutor() as executor:
+            future = executor.submit(client.post, "/api/v1/evaluate", files=self.files(), headers={"Idempotency-Key": "live-test"})
+            try:
+                self.assertTrue(entered.wait(5))
+                response = client.get("/api/v1/evaluation-progress/live-test")
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["stage"], "reading")
+                self.assertIn("2,955", response.json()["message"])
+                self.assertEqual(client.get("/api/v1/evaluation-progress/other-request").json()["status"], "pending")
+            finally:
+                release.set()
+            self.assertEqual(future.result(timeout=5).status_code, 200)
+            self.assertEqual(client.get("/api/v1/evaluation-progress/live-test").json()["status"], "complete")
+
+    def test_failed_evaluation_finishes_progress(self):
+        with self.client(_EvaluationService(error=RuntimeError("test failure"))) as client:
+            response = client.post("/api/v1/evaluate", files=self.files(), headers={"Idempotency-Key": "failed-test"})
+            self.assertEqual(response.status_code, 500)
+            snapshot = client.get("/api/v1/evaluation-progress/failed-test").json()
+            self.assertEqual(snapshot["status"], "failed")
+            self.assertNotIn("test failure", snapshot["message"])
 
     def test_default_service_factory_reuses_one_smarthtr_client(self):
         factory = _default_service_factory(self.settings)

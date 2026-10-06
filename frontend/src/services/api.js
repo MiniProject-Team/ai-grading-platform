@@ -12,10 +12,14 @@ export class ApiError extends Error {
 }
 
 export async function request(path, options = {}) {
+  const { signal, timeoutMs = REQUEST_TIMEOUT_MS, ...fetchOptions } = options;
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  const timeout = window.setTimeout(abort, timeoutMs);
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, { ...options, signal: controller.signal });
+    const response = await fetch(`${API_BASE_URL}${path}`, { ...fetchOptions, signal: controller.signal });
     const contentType = response.headers.get('content-type') || '';
     const payload = contentType.includes('application/json') ? await response.json() : null;
     if (!response.ok) {
@@ -35,6 +39,7 @@ export async function request(path, options = {}) {
     if (error instanceof ApiError) throw error;
     throw new ApiError('Unable to reach SmartEval. Check that the backend is running and try again.');
   } finally {
+    signal?.removeEventListener('abort', abort);
     window.clearTimeout(timeout);
   }
 }

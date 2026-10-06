@@ -7,6 +7,7 @@ from domain.entities.evaluation_report import EvaluationReport, ExamInformation,
 from reporting.evaluation_report_generator import EvaluationReportGenerator
 
 from .feedback_pipeline import FeedbackPipeline
+from .progress import report_progress
 
 
 class ReportPipeline:
@@ -34,6 +35,7 @@ class ReportPipeline:
             model_answer,
             student_text,
         )
+        report_progress("report", "Preparing the final evaluation report.")
         if post_input_context is not None:
             provider_warnings, provider_metadata = post_input_context()
             additional_warnings = tuple(dict.fromkeys((*additional_warnings, *provider_warnings)))

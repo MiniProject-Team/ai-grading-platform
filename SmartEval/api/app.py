@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from api.errors import APIProblem
+from api.progress import ProgressStore
 from api.routes import evaluation_router, health_router, question_paper_router
 from api.schemas.responses import ErrorDetailResponse, ErrorResponse
 from config.settings import Settings
@@ -29,6 +30,7 @@ def create_app(
     configure_logging(settings)
     app = FastAPI(title="SmartEval API", version="1.0.0")
     app.state.settings = settings
+    app.state.evaluation_progress = ProgressStore()
     app.state.evaluation_service_factory = evaluation_service_factory or _default_service_factory(settings)
     default_persistence = _default_persistence_service_factory(settings)
     app.state.persistence_service_factory = persistence_service_factory or default_persistence[0]

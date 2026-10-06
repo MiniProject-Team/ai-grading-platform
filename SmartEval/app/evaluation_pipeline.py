@@ -6,6 +6,7 @@ from domain.entities.evaluation_result import EvaluationResult
 from evaluation.evaluation_engine import EvaluationEngine
 
 from .input_pipeline import InputAnalysis, InputPipeline
+from .progress import report_progress
 
 
 class EvaluationPipeline:
@@ -15,4 +16,8 @@ class EvaluationPipeline:
 
     def run(self, question_paper: Path, model_answer: Path, student_text: Path) -> tuple[InputAnalysis, list[EvaluationResult]]:
         analysis = self.input_pipeline.run(question_paper, model_answer, student_text)
-        return analysis, [self.evaluation_engine.evaluate(item) for item in analysis.items]
+        results = []
+        for index, item in enumerate(analysis.items, start=1):
+            report_progress("analyzing", f"Evaluating answer {index} of {len(analysis.items)} ({item.question.question_id}).")
+            results.append(self.evaluation_engine.evaluate(item))
+        return analysis, results

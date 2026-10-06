@@ -12,6 +12,7 @@ from feedback.feedback_service import FeedbackService
 
 from .evaluation_pipeline import EvaluationPipeline
 from .input_pipeline import InputAnalysis
+from .progress import report_progress
 
 
 class FeedbackPipeline:
@@ -36,7 +37,9 @@ class FeedbackPipeline:
         student_text: Path,
     ) -> tuple[InputAnalysis, list[EvaluationResult], list[MarksResult], TotalMarksResult, list[FeedbackResult]]:
         analysis, evaluations = self.evaluation_pipeline.run(question_paper, model_answer, student_text)
+        report_progress("marks", "Calculating question marks and the exam total.")
         marks = [self.marks_calculator.calculate(item.question, result) for item, result in zip(analysis.items, evaluations, strict=True)]
         total = self.total_calculator.calculate(marks, analysis.questions)
+        report_progress("feedback", "Generating strengths, missing concepts, and improvement suggestions.")
         feedback = self.feedback_service.generate(analysis.items, evaluations, marks)
         return analysis, evaluations, marks, total, feedback

@@ -46,6 +46,15 @@ class Settings:
     ilovepdf_secret_key: str = ""
     ilovepdf_region: str = "in"
     ilovepdf_timeout: float = 120.0
+    chrome_ocr_executable: str = ""
+    chrome_ocr_window_mode: str = "simple"
+    chrome_ocr_initial_wait_seconds: float = 10
+    chrome_ocr_click_x: int = 700
+    chrome_ocr_click_y: int = 500
+    chrome_ocr_max_attempts: int = 5
+    chrome_ocr_retry_delay_seconds: float = 2
+    chrome_ocr_stable_attempts: int = 5
+    chrome_ocr_min_characters: int = 20
     debug: bool = False
 
     @classmethod
@@ -92,6 +101,15 @@ class Settings:
             ilovepdf_secret_key=os.getenv("ILOVEPDF_SECRET_KEY", ""),
             ilovepdf_region=os.getenv("ILOVEPDF_REGION", "in"),
             ilovepdf_timeout=float(os.getenv("ILOVEPDF_TIMEOUT", "120")),
+            chrome_ocr_executable=str(os.getenv("CHROME_OCR_EXECUTABLE", '')),
+            chrome_ocr_window_mode=str(os.getenv("CHROME_OCR_WINDOW_MODE", 'simple')),
+            chrome_ocr_initial_wait_seconds=float(os.getenv("CHROME_OCR_INITIAL_WAIT_SECONDS", '10')),
+            chrome_ocr_click_x=int(os.getenv("CHROME_OCR_CLICK_X", '700')),
+            chrome_ocr_click_y=int(os.getenv("CHROME_OCR_CLICK_Y", '500')),
+            chrome_ocr_max_attempts=int(os.getenv("CHROME_OCR_MAX_ATTEMPTS", '5')),
+            chrome_ocr_retry_delay_seconds=float(os.getenv("CHROME_OCR_RETRY_DELAY_SECONDS", '2')),
+            chrome_ocr_stable_attempts=int(os.getenv("CHROME_OCR_STABLE_ATTEMPTS", '5')),
+            chrome_ocr_min_characters=int(os.getenv("CHROME_OCR_MIN_CHARACTERS", '20')),
             debug=os.getenv("DEBUG", "false").lower() == "true",
         )
 

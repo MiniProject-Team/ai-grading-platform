@@ -26,6 +26,10 @@ Set `VITE_API_BASE_URL` in `.env` to the SmartEval API, for example `http://loca
 
 The dashboard uses `POST /api/v1/evaluate` and the evaluation-history endpoints exposed by SmartEval. Uploaded files remain local until the teacher starts evaluation.
 
+While the submission runs, the dashboard polls `GET /api/v1/evaluation-progress/{idempotency_key}` once per second using the submission's `Idempotency-Key`. Stages and recent activity come from actual backend processing, including OCR attempts and character counts. Polling stops on completion, failure, or leaving the page, and reconnects after temporary network errors.
+
+Progress snapshots are kept in memory for up to one hour (at most 1,000 evaluations). Run the API with one Uvicorn worker, as in `uvicorn api.app:app`; multiple workers or replicas require a shared progress store. Completed reports remain in the existing persistence system.
+
 ## Tests and build
 
 ```powershell
